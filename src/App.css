@@ -1,0 +1,31 @@
+.field{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, 30px);
+}
+
+.mineBtn{
+    width: 30px;
+    height: 30px;
+    background-size: cover;
+    cursor: pointer;
+    border: none;
+    outline: none;
+}
+
+.simpleCell{
+    width: 30px;
+    height: 30px;
+    background-size: cover;
+    cursor: pointer;
+    border: none;
+    outline: none;
+}
+
+.startCell{
+    width: 30px;
+    height: 30px;
+    background-size: cover;
+    cursor: pointer;
+    border: none;
+    outline: none;
+}
