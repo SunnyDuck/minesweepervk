@@ -2,7 +2,6 @@ import React, {useMemo, useState} from 'react';
 import './App.css';
 
 const Mine = -1
-let allCells = 16 * 16;
 const minesQuantityArray = [
     '/sprites/fieldButtons/pressBtnBack.png',
     '/sprites/minesQuantityButtons/numberOne.png',
@@ -17,12 +16,10 @@ const minesQuantityArray = [
 function fieldConstructor (size: number): number[] {
 
   function getMinesAmount(x: number, y: number){
-
-        if(x >= 0 && x <= size && y >= 0 && y <= size){
-            if(field[(y)*size+(x)] === Mine) return;
-            field[(y)*size+(x)] += 1;
+        if(x >= 0 && x < size && y >= 0 && y < size){
+            if(field[y*size+x] === Mine) return;
+            field[y*size+x] += 1;
         }
-
   }
 
   const field: number[] = new Array(size*size).fill(0);
@@ -36,7 +33,7 @@ function fieldConstructor (size: number): number[] {
 
     i += 1;
 
-    getMinesAmount(x + 1, y);
+    getMinesAmount(x + 1 , y);
     getMinesAmount(x - 1, y);
     getMinesAmount(x, y + 1);
     getMinesAmount(x, y - 1);
@@ -74,7 +71,7 @@ const App = () => {
     const [field, setField] = useState<number[]>(() => fieldConstructor(size));
     const [mask, setMask] = useState<Mask[]>(() => new Array(size*size).fill(Mask.Start))
     const [loss, setLoss] = useState<boolean>(false);
-    //const [win, setWin] = useState<boolean>(false);
+    const [smile, setSmile] = useState<string>('url(/sprites/smileButtons/smileBack.png)');
     const win = React.useMemo(() => !field.some(
             (f, i) =>
                 f === Mine && mask[i] !== Mask.Flag
@@ -83,15 +80,34 @@ const App = () => {
         [field, mask],
     );
 
+    if(win){
+        mask.forEach((_,i) => {
+            if(mask[i] === Mask.Flag) mask[i] = Mask.FoundedMine;
+            else mask[i] = Mask.ValueMask;
+        });
+    }
+
     return (
-        <div>
+        <div className='container'>
+            <div className='menu'>
+                <div>Счетчик флагов</div>
+                <button className='mainButton' style={{backgroundImage:
+                        loss ? 'url(/sprites/smileButtons/deadSmileBack.png)':
+                        win ? 'url(/sprites/smileButtons/coolSmileBack.png)':
+                            smile
+                }}></button>
+                <div>Таймер</div>
+            </div>
             {iterator.map((_, y) => {
                 return(<div key = {y} className='field'>
                     {iterator.map((_, x) => {
                         return (<div
                             key = {x}
                             onClick={() => {
-                                if(mask[y*size+x] === Mask.ValueMask) return;
+                                if(mask[y*size+x] === Mask.ValueMask
+                                    || mask[y*size+x] === Mask.BombExploded
+                                    || mask[y*size+x] === Mask.FoundedMine
+                                ) return;
                                 const cleaning: [number, number][] = [];
                                 function clean(x: number, y: number){
                                     if(x >= 0 && x < size && y >= 0 && y < size){
@@ -118,32 +134,33 @@ const App = () => {
                                         else mask[i] = Mask.ValueMask;
                                     });
                                     mask[y*size+x] = Mask.BombExploded;
-                                    alert('LOSE');
                                     setLoss(true);
-                                }
-                                if(win){
-                                    alert('WIN');
                                 }
 
                                 setMask((prev) => [...prev]);
-
                             }}
-
                             onContextMenu={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                if(mask[y*size+x] === Mask.Start) {
-                                    mask[y*size+x] = Mask.Flag;
-                                }
-                                else if(mask[y*size+x] === Mask.Flag){
-                                    mask[y*size+x] = Mask.Question;
-                                }
-                                else if(mask[y*size+x] === Mask.Question){
-                                    mask[y*size+x] = Mask.Start;
+                                if(!win && !loss){
+                                    if(mask[y*size+x] === Mask.Start) {
+                                        mask[y*size+x] = Mask.Flag;
+                                    }
+                                    else if(mask[y*size+x] === Mask.Flag){
+                                        mask[y*size+x] = Mask.Question;
+                                    }
+                                    else if(mask[y*size+x] === Mask.Question){
+                                        mask[y*size+x] = Mask.Start;
+                                    }
                                 }
                                 setMask((prev) => [...prev]);
                             } }
-
+                            onMouseDown={() => {
+                                if(mask[y*size+x] === Mask.Start){
+                                    setSmile('url(/sprites/smileButtons/frightSmileBack.png)')
+                                }
+                            }}
+                            onMouseUp={() => {setSmile('url(/sprites/smileButtons/smileBack.png)')}}
                         >{
                             mask[y*size+x] !== Mask.ValueMask ?
                                 maskToView[mask[y*size+x]]:

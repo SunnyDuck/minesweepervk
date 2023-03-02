@@ -1,6 +1,38 @@
+.container{
+    width: 550px;
+    height: 700px;
+    background-color: darkgray;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    margin: auto;
+}
+
+.menu{
+    width: 480px;
+    height: 100px;
+    background-color: gray;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.mainButton{
+    background-size: cover;
+    width: 40px;
+    height: 40px;
+    border: none;
+    outline: none;
+}
+
 .field{
     display: grid;
-    grid-template-columns: repeat(auto-fit, 30px);
+    grid-template-columns: repeat(16, 30px);
+    padding: 0;
+    width: 480px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .mineBtn{
