@@ -2,6 +2,7 @@ import React, {useMemo, useState} from 'react';
 import './App.css';
 
 const Mine = -1
+const minesQuantity = 5;
 const minesQuantityArray = [
     '/sprites/fieldButtons/pressBtnBack.png',
     '/sprites/minesQuantityButtons/numberOne.png',
@@ -13,6 +14,18 @@ const minesQuantityArray = [
     '/sprites/minesQuantityButtons/numberSeven.png',
     '/sprites/minesQuantityButtons/numberEight.png'
 ];
+const numerals = [
+    'url(/sprites/numerals/zero.png)',
+    'url(/sprites/numerals/one.png)',
+    'url(/sprites/numerals/two.png)',
+    'url(/sprites/numerals/three.png)',
+    'url(/sprites/numerals/four.png)',
+    'url(/sprites/numerals/five.png)',
+    'url(/sprites/numerals/six.png)',
+    'url(/sprites/numerals/seven.png)',
+    'url(/sprites/numerals/eight.png)',
+    'url(/sprites/numerals/nine.png)'
+]
 function fieldConstructor (size: number): number[] {
 
   function getMinesAmount(x: number, y: number){
@@ -24,7 +37,7 @@ function fieldConstructor (size: number): number[] {
 
   const field: number[] = new Array(size*size).fill(0);
 
-  for(let i=0; i<5;){
+  for(let i=0; i<minesQuantity;){
     const x = Math.floor(Math.random()*size);
     const y = Math.floor(Math.random()*size);
 
@@ -72,6 +85,18 @@ const App = () => {
     const [mask, setMask] = useState<Mask[]>(() => new Array(size*size).fill(Mask.Start))
     const [loss, setLoss] = useState<boolean>(false);
     const [smile, setSmile] = useState<string>('url(/sprites/smileButtons/smileBack.png)');
+    const [flagsQuantity, setFlagsQuantity] = useState<number>(minesQuantity);
+    const [ seconds, setSeconds ] = useState(0);
+    const [ timerActive, setTimerActive ] = React.useState(true);
+
+    React.useEffect(() => {
+        if (seconds < 999 && timerActive) {
+            setTimeout(setSeconds, 1000, seconds + 1);
+        }
+        else setTimerActive(false);
+        if(win || loss) setTimerActive(false);
+    }, [ seconds, timerActive ]);
+
     const win = React.useMemo(() => !field.some(
             (f, i) =>
                 f === Mine && mask[i] !== Mask.Flag
@@ -90,13 +115,24 @@ const App = () => {
     return (
         <div className='container'>
             <div className='menu'>
-                <div>Счетчик флагов</div>
-                <button className='mainButton' style={{backgroundImage:
+                <div className='flagsQuality'>
+                    <div className={'numeralValue'} style={{backgroundImage: numerals[Math.trunc(flagsQuantity/100)]}}></div>
+                    <div className={'numeralValue'} style={{backgroundImage: numerals[Math.trunc((flagsQuantity/10)%10)]}}></div>
+                    <div className={'numeralValue'} style={{backgroundImage: numerals[flagsQuantity%10]}}></div>
+                </div>
+                <button className='mainButton'
+                        onMouseDown={() => {{setSmile('url(/sprites/smileButtons/pressSmileBack.png)')}}}
+                        onMouseUp={() => {{setSmile('url(/sprites/smileButtons/smileBack.png)')}}}
+                        style={{backgroundImage:
                         loss ? 'url(/sprites/smileButtons/deadSmileBack.png)':
                         win ? 'url(/sprites/smileButtons/coolSmileBack.png)':
                             smile
                 }}></button>
-                <div>Таймер</div>
+                <div className={'timer'}>
+                    <div className={'numeralValue'} style={{backgroundImage: numerals[Math.trunc(seconds/100)]}}></div>
+                    <div className={'numeralValue'} style={{backgroundImage: numerals[Math.trunc((seconds/10)%10)]}}></div>
+                    <div className={'numeralValue'} style={{backgroundImage: numerals[seconds%10]}}></div>
+                </div>
             </div>
             {iterator.map((_, y) => {
                 return(<div key = {y} className='field'>
@@ -143,16 +179,19 @@ const App = () => {
                                 e.preventDefault();
                                 e.stopPropagation();
                                 if(!win && !loss){
-                                    if(mask[y*size+x] === Mask.Start) {
+                                    if(mask[y*size+x] === Mask.Start && flagsQuantity > 0) {
                                         mask[y*size+x] = Mask.Flag;
+                                        setFlagsQuantity(flagsQuantity-1);
                                     }
                                     else if(mask[y*size+x] === Mask.Flag){
                                         mask[y*size+x] = Mask.Question;
                                     }
                                     else if(mask[y*size+x] === Mask.Question){
                                         mask[y*size+x] = Mask.Start;
+                                        setFlagsQuantity(flagsQuantity+1);
                                     }
                                 }
+                                console.log(flagsQuantity)
                                 setMask((prev) => [...prev]);
                             } }
                             onMouseDown={() => {
