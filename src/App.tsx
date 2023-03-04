@@ -3,6 +3,7 @@ import './App.css';
 
 const Mine = -1
 const minesQuantity = 5;
+const size = 16;
 const minesQuantityArray = [
     '/sprites/fieldButtons/pressBtnBack.png',
     '/sprites/minesQuantityButtons/numberOne.png',
@@ -79,25 +80,27 @@ const maskToView: Record<Mask, React.ReactNode> = {
 }
 
 const App = () => {
-    const size = 16;
     const iterator = new Array(size).fill(null);
     const [field, setField] = useState<number[]>(() => fieldConstructor(size));
     const [mask, setMask] = useState<Mask[]>(() => new Array(size*size).fill(Mask.Start))
     const [loss, setLoss] = useState<boolean>(false);
     const [smile, setSmile] = useState<string>('url(/sprites/smileButtons/smileBack.png)');
     const [flagsQuantity, setFlagsQuantity] = useState<number>(minesQuantity);
-    const [ seconds, setSeconds ] = useState(0);
-    const [ timerActive, setTimerActive ] = React.useState(true);
+    const [seconds, setSeconds ] = useState<number>(0);
+    const [timerActive, setTimerActive ] = useState<boolean>(false);
 
     React.useEffect(() => {
         if (seconds < 999 && timerActive) {
             setTimeout(setSeconds, 1000, seconds + 1);
+            console.log(seconds);
         }
-        else setTimerActive(false);
-        if(win || loss) setTimerActive(false);
+        else {
+            setTimerActive(false);
+            setSeconds(0);
+        }
     }, [ seconds, timerActive ]);
 
-    const win = React.useMemo(() => !field.some(
+    const win = useMemo(() => !field.some(
             (f, i) =>
                 f === Mine && mask[i] !== Mask.Flag
                 && mask[i] !== Mask.ValueMask
@@ -123,6 +126,14 @@ const App = () => {
                 <button className='mainButton'
                         onMouseDown={() => {{setSmile('url(/sprites/smileButtons/pressSmileBack.png)')}}}
                         onMouseUp={() => {{setSmile('url(/sprites/smileButtons/smileBack.png)')}}}
+                        onClick={() => {
+                            setSeconds(0);
+                            setField(fieldConstructor(size));
+                            setMask(new Array(size*size).fill(Mask.Start));
+                            setTimerActive(false);
+                            setFlagsQuantity(minesQuantity);
+                            setLoss(false);
+                        }}
                         style={{backgroundImage:
                         loss ? 'url(/sprites/smileButtons/deadSmileBack.png)':
                         win ? 'url(/sprites/smileButtons/coolSmileBack.png)':
@@ -140,6 +151,8 @@ const App = () => {
                         return (<div
                             key = {x}
                             onClick={() => {
+                                setSeconds(0);
+                                setTimerActive(true);
                                 if(mask[y*size+x] === Mask.ValueMask
                                     || mask[y*size+x] === Mask.BombExploded
                                     || mask[y*size+x] === Mask.FoundedMine
@@ -171,6 +184,7 @@ const App = () => {
                                     });
                                     mask[y*size+x] = Mask.BombExploded;
                                     setLoss(true);
+                                    setTimerActive(false);
                                 }
 
                                 setMask((prev) => [...prev]);
@@ -178,6 +192,7 @@ const App = () => {
                             onContextMenu={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
+                                setTimerActive(true);
                                 if(!win && !loss){
                                     if(mask[y*size+x] === Mask.Start && flagsQuantity > 0) {
                                         mask[y*size+x] = Mask.Flag;
@@ -191,7 +206,6 @@ const App = () => {
                                         setFlagsQuantity(flagsQuantity+1);
                                     }
                                 }
-                                console.log(flagsQuantity)
                                 setMask((prev) => [...prev]);
                             } }
                             onMouseDown={() => {
