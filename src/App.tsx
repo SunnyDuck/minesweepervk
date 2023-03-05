@@ -157,7 +157,7 @@ const App = () => {
         return () => {
             interval && clearInterval(interval);
         };
-    }, [timerActive]);
+    }, [timerActive, win]);
 
     return (
         <div className='container'>
