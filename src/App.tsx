@@ -5,7 +5,7 @@ import TimerApp from "./Components/timer/TimerApp";
 import MainButton from "./Components/mainButton/MainButton";
 
 const mine = -1
-const minesQuantity = 5;
+const minesQuantity = 40;
 const sizeField = 16;
 const fieldButtonsPath = '/sprites/fieldButtons/';
 const minesQuantityPath = '/sprites/minesQuantityButtons/';
