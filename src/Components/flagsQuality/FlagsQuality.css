@@ -1,0 +1,9 @@
+.flagsQuality{
+    display: flex;
+}
+
+.numeralValue{
+    width: 30px;
+    height: 50px;
+    background-size: cover;
+}
